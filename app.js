@@ -3,6 +3,10 @@ const cors = require("cors");
 const app = express();
 require("dotenv").config();
 
+const userRoutes = require("./src/routes/userRoutes");
+const customisedCVRoutes = require("./src/routes/customisedCVRoutes");
+const jobListingRoutes = require("./src/routes/jobListingRoutes");
+
 const connectDB = require("./src/config/db");
 
 const PORT = process.env.PORT || 8000;
@@ -16,9 +20,10 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-app.get("/", (req, res) => {
-  res.send("Server is running!");
-});
+// Use routes
+app.use("/users", userRoutes);
+app.use("/customisedcvs", customisedCVRoutes);
+app.use("/joblistings", jobListingRoutes);
 
 // Start Server
 app.listen(PORT, () => {
