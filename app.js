@@ -1,6 +1,5 @@
 const express = require("express");
 const cors = require("cors");
-const serverless = require("serverless-http");
 require("dotenv").config();
 
 const userRoutes = require("./src/routes/userRoutes");
@@ -23,10 +22,10 @@ app.use("/users", userRoutes);
 app.use("/customisedcvs", customisedCVRoutes);
 app.use("/joblistings", jobListingRoutes);
 
-// // Start Server
-// app.listen(PORT, () => {
-//   console.log(`Server is running on http://localhost:${PORT}`);
-// });
+// Set the port, using the environment variable if available (for Elastic Beanstalk compatibility)
+const PORT = process.env.PORT || 8000;
 
-// Export the app wrapped with serverless-http
-module.exports.handler = serverless(app);
+// Start server
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+});
