@@ -23,5 +23,10 @@ app.use("/users", userRoutes);
 app.use("/customisedcvs", customisedCVRoutes);
 app.use("/joblistings", jobListingRoutes);
 
+// // Start Server
+// app.listen(PORT, () => {
+//   console.log(`Server is running on http://localhost:${PORT}`);
+// });
+
 // Export the app wrapped with serverless-http
 module.exports.handler = serverless(app);
