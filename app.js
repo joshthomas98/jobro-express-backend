@@ -5,6 +5,7 @@ require("dotenv").config();
 const userRoutes = require("./src/routes/userRoutes");
 const customisedCVRoutes = require("./src/routes/customisedCVRoutes");
 const jobListingRoutes = require("./src/routes/jobListingRoutes");
+const newsletterSignupRoutes = require("./src/routes/newsletterSignupRoutes");
 
 const connectDB = require("./src/config/db");
 
@@ -23,6 +24,7 @@ app.get("/", (req, res) => res.send("Express on Vercel"));
 app.use("/users", userRoutes);
 app.use("/customisedcvs", customisedCVRoutes);
 app.use("/joblistings", jobListingRoutes);
+app.use("/newslettersignups", newsletterSignupRoutes);
 
 // Set the port, using the environment variable if available (for Elastic Beanstalk compatibility)
 const PORT = process.env.PORT || 8000;
