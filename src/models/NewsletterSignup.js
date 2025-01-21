@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
 
-const NewsletterSchema = new mongoose.Schema({
+const NewsletterSignupSchema = new mongoose.Schema({
   email: { type: String, required: true },
   signedUpAt: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.model("Newsletter", NewsletterSchema);
+module.exports = mongoose.model("NewsletterSignup", NewsletterSignupSchema);

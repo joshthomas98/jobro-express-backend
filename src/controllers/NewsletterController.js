@@ -1,9 +1,9 @@
-const Newsletter = require("../models/Newsletter");
+const NewsletterSignup = require("../models/NewsletterSignup");
 
 // Fetch all newsletter signups
 exports.getAllNewsletterSignups = async (req, res) => {
   try {
-    const newsletterSignups = await Newsletter.find();
+    const newsletterSignups = await NewsletterSignup.find();
     res.json(newsletterSignups);
   } catch (error) {
     res.status(500).json({ error: "Error fetching newsletter signups" });
@@ -13,7 +13,7 @@ exports.getAllNewsletterSignups = async (req, res) => {
 // Fetch a single newsletter signup by ID
 exports.getNewsletterSignupById = async (req, res) => {
   try {
-    const newsletterSignup = await Newsletter.findById(req.params.id);
+    const newsletterSignup = await NewsletterSignup.findById(req.params.id);
     if (!newsletterSignup) {
       return res.status(404).json({ error: "Newsletter signup not found" });
     }
@@ -26,7 +26,7 @@ exports.getNewsletterSignupById = async (req, res) => {
 // Create a new newsletter signup
 exports.createNewNewsletterSignup = async (req, res) => {
   try {
-    const newsletterSignup = new Newsletter(req.body);
+    const newsletterSignup = new NewsletterSignup(req.body);
     await newsletterSignup.save();
     res.status(201).json(newsletterSignup);
   } catch (error) {
@@ -38,9 +38,13 @@ exports.createNewNewsletterSignup = async (req, res) => {
 exports.updateNewsletterSignupById = async (req, res) => {
   const { id } = req.params;
   try {
-    const newsletterSignup = await Newsletter.findByIdAndUpdate(id, req.body, {
-      new: true,
-    });
+    const newsletterSignup = await NewsletterSignup.findByIdAndUpdate(
+      id,
+      req.body,
+      {
+        new: true,
+      }
+    );
     if (!newsletterSignup)
       return res.status(404).json({ error: "Newsletter signup not found" });
     res.json(newsletterSignup);
@@ -53,7 +57,7 @@ exports.updateNewsletterSignupById = async (req, res) => {
 exports.deleteNewsletterSignupById = async (req, res) => {
   const { id } = req.params;
   try {
-    const newsletterSignup = await Newsletter.findByIdAndDelete(id);
+    const newsletterSignup = await NewsletterSignup.findByIdAndDelete(id);
     if (!newsletterSignup)
       return res.status(404).json({ error: "Newsletter signup not found" });
     res.status(204).send();
