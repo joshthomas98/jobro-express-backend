@@ -3,6 +3,7 @@ const User = require("../models/User");
 const axios = require("axios");
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
+require("dotenv").config();
 
 // Function to generate PDF from the AI-optimised CV text
 async function generateOptimisedCVPdf(text) {
@@ -86,31 +87,69 @@ exports.deleteJobListingById = async (req, res) => {
 
 // Process the job listing text with AI to generate an optimised CV
 exports.processTextWithAI = async (combinedText) => {
-  const VITE_OPENAI_API_URL = process.env.VITE_OPENAI_API_URL;
-  const VITE_OPENAI_API_KEY = process.env.VITE_OPENAI_API_KEY;
-  const PROMPT = process.env.PROMPT;
+  const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
+  const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+  const PROMPT = `Act as a professional CV expert specialising in job application optimisation. Given a base CV and a specific job description, your task is to tailor the CV to highlight the most relevant skills, experiences, and achievements that align with the job requirements. Perform the following steps:  
+1. Reorder, rephrase, or refine existing sections of the CV to better match the language, keywords, and priorities of the job description.  
+2. Ensure all grammar, spelling, and formatting are error-free, adhering to UK English conventions throughout.  
+3. Preserve the original content and integrity of the CV without inventing new information, but enhance and emphasise key points where applicable.  
+4. Ensure the CV passes ATS (Applicant Tracking System) filters by incorporating relevant keywords from the job description naturally.  
+5. Make the CV concise, impactful, and tailored to stand out to hiring managers.  
+
+Provide the output as a fully customised and professional CV tailored to the job description. The input will include the users base CV followed by the job description.`;
 
   const payload = {
-    model: "gpt-3.5-turbo-instruct",
-    prompt: `${PROMPT}\n\n${combinedText}`,
+    model: "gpt-3.5-turbo",
+    messages: [
+      { role: "system", content: PROMPT },
+      { role: "user", content: combinedText },
+    ],
     temperature: 0.5,
     max_tokens: 1500,
     frequency_penalty: 1,
   };
 
   try {
-    const response = await axios.post(VITE_OPENAI_API_URL, payload, {
+    const response = await axios.post(OPENAI_API_URL, payload, {
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${VITE_OPENAI_API_KEY}`,
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
       },
     });
 
-    const data = response.data.choices[0].text.trim();
+    // Accessing message.content for gpt-3.5-turbo response structure
+    const data = response.data.choices[0].message.content.trim();
     return data;
   } catch (error) {
+    // Log the full error for debugging purposes
     console.error("Error in processTextWithAI:", error);
-    throw new Error("Failed to process text with AI.");
+
+    // Check if the error is from Axios and includes a response
+    if (error.response) {
+      const { status, statusText, data } = error.response;
+      console.error(
+        `Axios Error: ${status} ${statusText} - ${
+          data?.error?.message || JSON.stringify(data)
+        }`
+      );
+      throw new Error(
+        `Failed to process text with AI. Received ${status} ${statusText} from OpenAI API: ${
+          data?.error?.message || "No additional details"
+        }`
+      );
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error("No response received from OpenAI API:", error.request);
+      throw new Error(
+        "Failed to process text with AI. No response received from OpenAI API. Please check your network connection or the API status."
+      );
+    } else {
+      // Some other kind of error
+      console.error("Unexpected error:", error.message);
+      throw new Error(
+        `Failed to process text with AI. Unexpected error: ${error.message}`
+      );
+    }
   }
 };
 
@@ -127,8 +166,13 @@ exports.receiveJobListingText = async (req, res) => {
       return res.status(404).json({ error: "User not found." });
     }
 
+    // Ensure baseCV content exists before processing
+    if (!user.baseCV || !user.baseCV.content) {
+      return res.status(404).json({ error: "Base CV content not found." });
+    }
+
     // Get base CV text directly from the content field
-    const baseCVText = user.baseCV.content; // Content is already stored in the database
+    const baseCVText = user.baseCV.content;
 
     // Combine base CV text and job listing text
     const combinedText = `${baseCVText}\n\n${jobListingText}`;
@@ -152,6 +196,7 @@ exports.receiveJobListingText = async (req, res) => {
       "attachment; filename=optimised_cv.pdf"
     );
     res.send(pdfBuffer);
+    console.log(pdfBuffer);
   } catch (error) {
     console.error("Error in receiveJobListingText:", error);
     res

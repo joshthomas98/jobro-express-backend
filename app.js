@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const path = require("path"); // Import the path module
 require("dotenv").config();
 
 const userRoutes = require("./src/routes/userRoutes");
@@ -19,6 +20,20 @@ app.use(cors());
 app.use(express.json());
 
 app.get("/", (req, res) => res.send("Express on Vercel"));
+
+// Download CV route
+app.get("/download-cv", (req, res) => {
+  // Path to the generated CV PDF file
+  const filePath = path.join(__dirname, "generated_cv.pdf");
+
+  // Send the PDF as a download response
+  res.download(filePath, "GeneratedCV.pdf", (err) => {
+    if (err) {
+      console.error("File download error:", err);
+      res.status(500).send("Error downloading the file");
+    }
+  });
+});
 
 // Routes
 app.use("/users", userRoutes);
