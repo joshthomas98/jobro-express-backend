@@ -87,14 +87,21 @@ exports.deleteJobListingById = async (req, res) => {
 
 // Process the job listing text with AI to generate an optimised CV
 exports.processTextWithAI = async (combinedText) => {
-  const OpenAIApiUrl = process.env.OPENAI_API_URL;
-  const OpenAIApiKey = process.env.OPENAI_API_KEY;
-  const prompt = process.env.PROMPT;
+  const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
+  const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+  const PROMPT = `Act as a professional CV expert specialising in job application optimisation. Given a base CV and a specific job description, your task is to tailor the CV to highlight the most relevant skills, experiences, and achievements that align with the job requirements. Perform the following steps:  
+1. Reorder, rephrase, or refine existing sections of the CV to better match the language, keywords, and priorities of the job description.  
+2. Ensure all grammar, spelling, and formatting are error-free, adhering to UK English conventions throughout.  
+3. Preserve the original content and integrity of the CV without inventing new information, but enhance and emphasise key points where applicable.  
+4. Ensure the CV passes ATS (Applicant Tracking System) filters by incorporating relevant keywords from the job description naturally.  
+5. Make the CV concise, impactful, and tailored to stand out to hiring managers.  
+
+Provide the output as a fully customised and professional CV tailored to the job description. The input will include the users base CV followed by the job description.`;
 
   const payload = {
     model: "gpt-3.5-turbo",
     messages: [
-      { role: "system", content: prompt },
+      { role: "system", content: PROMPT },
       { role: "user", content: combinedText },
     ],
     temperature: 0.5,
@@ -103,10 +110,10 @@ exports.processTextWithAI = async (combinedText) => {
   };
 
   try {
-    const response = await axios.post(OpenAIApiUrl, payload, {
+    const response = await axios.post(OPENAI_API_URL, payload, {
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${OpenAIApiKey}`,
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
       },
     });
 
