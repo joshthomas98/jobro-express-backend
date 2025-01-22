@@ -89,7 +89,7 @@ exports.deleteJobListingById = async (req, res) => {
 exports.processTextWithAI = async (combinedText) => {
   const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
   const OPENAI_API_KEY =
-    "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";
+    "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";
   const NEW_PROMPT = `Act as a professional CV optimisation expert specialising in tailoring CVs for specific job applications. Your task is to adjust a provided base CV to align with a supplied job description. Follow these guidelines to ensure a highly tailored and professional output:
 
 Keyword Integration and ATS Optimisation:
