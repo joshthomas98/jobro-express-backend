@@ -87,49 +87,9 @@ exports.deleteJobListingById = async (req, res) => {
 
 // Process the job listing text with AI to generate an optimised CV
 exports.processTextWithAI = async (combinedText) => {
-  const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
-  const OPENAI_API_KEY =
-    "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";
-  const NEW_PROMPT = `Act as a professional CV optimisation expert specialising in tailoring CVs for specific job applications. Your task is to adjust a provided base CV to align with a supplied job description. Follow these guidelines to ensure a highly tailored and professional output:
-
-Keyword Integration and ATS Optimisation:
-
-Analyse the job description to identify key skills, experiences, and qualifications.
-Incorporate relevant keywords and phrases from the job description naturally into the CV to ensure it passes ATS (Applicant Tracking System) filters.
-Avoid repeating the job listing verbatim. Instead, tailor existing CV content to reflect the job requirements using ATS-friendly phrasing.
-Reorganisation and Refinement:
-
-Reorder, rephrase, or refine existing sections of the CV to highlight the most relevant skills, achievements, and experiences.
-Ensure the CV flows logically, presenting the most impactful and job-relevant information prominently.
-Accuracy and Integrity:
-
-Do not invent, exaggerate, or fabricate new skills, experiences, or achievements.
-Enhance and emphasise existing points to align with the job description, but only if the CV's base information supports them.
-UK English and Professionalism:
-
-Use UK English conventions for spelling, grammar, and formatting.
-Ensure all content is concise, error-free, and professionally worded to make the CV stand out.
-Conciseness and Impact:
-
-Remove unnecessary or unrelated details that do not align with the job description.
-Ensure the CV remains within an appropriate length while effectively conveying qualifications and value to the employer.
-Alignment with Job Priorities:
-
-Identify the key priorities and values of the role from the job description.
-Tailor the tone and content of the CV to reflect these priorities, making the candidate's suitability clear and compelling.
-Provide the output as a fully customised, professional CV that maximises the applicant's chances of success for the specified role. The input will include:
-
-The user's base CV.
-The job description text.`;
-
-  //     const PROMPT = `Act as a professional CV expert specialising in job application optimisation. Given a base CV and a specific job description, your task is to tailor the CV to highlight the most relevant skills, experiences, and achievements that align with the job requirements. Perform the following steps:
-  // 1. Reorder, rephrase, or refine existing sections of the CV to better match the language, keywords, and priorities of the job description.
-  // 2. Ensure all grammar, spelling, and formatting are error-free, adhering to UK English conventions throughout.
-  // 3. Preserve the original content and integrity of the CV without inventing new information, but enhance and emphasise key points where applicable.
-  // 4. Ensure the CV passes ATS (Applicant Tracking System) filters by incorporating relevant keywords from the job description naturally.
-  // 5. Make the CV concise, impactful, and tailored to stand out to hiring managers.
-
-  // Provide the output as a fully customised and professional CV tailored to the job description. The input will include the users base CV followed by the job description.`;
+  const API_URL = process.env.OPENAI_API_URL;
+  const API_KEY = process.env.OPENAI_API_KEY;
+  const NEW_PROMPT = process.env.NEW_PROMPT;
 
   const payload = {
     model: "gpt-3.5-turbo",
@@ -143,10 +103,10 @@ The job description text.`;
   };
 
   try {
-    const response = await axios.post(OPENAI_API_URL, payload, {
+    const response = await axios.post(API_URL, payload, {
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
+        Authorization: `Bearer ${API_KEY}`,
       },
     });
 
