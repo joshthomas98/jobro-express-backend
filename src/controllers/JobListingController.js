@@ -87,39 +87,9 @@ exports.deleteJobListingById = async (req, res) => {
 
 // Process the job listing text with AI to generate an optimised CV
 exports.processTextWithAI = async (combinedText) => {
-  const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
+  const OPENAI_API_URL = process.env.OPENAI_API_URL;
   const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-  const PROMPT = `Act as a professional CV optimisation expert specialising in tailoring CVs for specific job applications. Your task is to adjust a provided base CV to align with a supplied job description. Follow these guidelines to ensure a highly tailored and professional output:
-
-Keyword Integration and ATS Optimisation:
-
-Analyse the job description to identify key skills, experiences, and qualifications.
-Incorporate relevant keywords and phrases from the job description naturally into the CV to ensure it passes ATS (Applicant Tracking System) filters.
-Avoid repeating the job listing verbatim. Instead, tailor existing CV content to reflect the job requirements using ATS-friendly phrasing.
-Reorganisation and Refinement:
-
-Reorder, rephrase, or refine existing sections of the CV to highlight the most relevant skills, achievements, and experiences.
-Ensure the CV flows logically, presenting the most impactful and job-relevant information prominently.
-Accuracy and Integrity:
-
-Do not invent, exaggerate, or fabricate new skills, experiences, or achievements.
-Enhance and emphasise existing points to align with the job description, but only if the CV's base information supports them.
-UK English and Professionalism:
-
-Use UK English conventions for spelling, grammar, and formatting.
-Ensure all content is concise, error-free, and professionally worded to make the CV stand out.
-Conciseness and Impact:
-
-Remove unnecessary or unrelated details that do not align with the job description.
-Ensure the CV remains within an appropriate length while effectively conveying qualifications and value to the employer.
-Alignment with Job Priorities:
-
-Identify the key priorities and values of the role from the job description.
-Tailor the tone and content of the CV to reflect these priorities, making the candidate's suitability clear and compelling.
-Provide the output as a fully customised, professional CV that maximises the applicant's chances of success for the specified role. The input will include:
-
-The user's base CV.
-The job description text.`;
+  const PROMPT = process.env.NEW_PROMPT;
 
   //     const PROMPT = `Act as a professional CV expert specialising in job application optimisation. Given a base CV and a specific job description, your task is to tailor the CV to highlight the most relevant skills, experiences, and achievements that align with the job requirements. Perform the following steps:
   // 1. Reorder, rephrase, or refine existing sections of the CV to better match the language, keywords, and priorities of the job description.
@@ -133,7 +103,7 @@ The job description text.`;
   const payload = {
     model: "gpt-3.5-turbo",
     messages: [
-      { role: "system", content: PROMPT },
+      { role: "system", content: NEW_PROMPT },
       { role: "user", content: combinedText },
     ],
     temperature: 0.5,
