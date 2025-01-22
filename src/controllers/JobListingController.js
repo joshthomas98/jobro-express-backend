@@ -89,7 +89,7 @@ exports.deleteJobListingById = async (req, res) => {
 exports.processTextWithAI = async (combinedText) => {
   const OPENAI_API_URL = process.env.OPENAI_API_URL;
   const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-  const PROMPT = process.env.NEW_PROMPT;
+  const NEW_PROMPT = process.env.NEW_PROMPT;
 
   //     const PROMPT = `Act as a professional CV expert specialising in job application optimisation. Given a base CV and a specific job description, your task is to tailor the CV to highlight the most relevant skills, experiences, and achievements that align with the job requirements. Perform the following steps:
   // 1. Reorder, rephrase, or refine existing sections of the CV to better match the language, keywords, and priorities of the job description.
