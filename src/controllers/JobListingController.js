@@ -87,14 +87,10 @@ exports.deleteJobListingById = async (req, res) => {
 
 // Process the job listing text with AI to generate an optimised CV
 exports.processTextWithAI = async (combinedText) => {
-  const API_URL = process.env.OPENAI_API_URL;
-  const API_KEY = process.env.OPENAI_API_KEY;
-  const NEW_PROMPT = process.env.NEW_PROMPT;
-
   const payload = {
     model: "gpt-3.5-turbo",
     messages: [
-      { role: "system", content: NEW_PROMPT },
+      { role: "system", content: process.env.NEW_PROMPT },
       { role: "user", content: combinedText },
     ],
     temperature: 0.5,
@@ -103,10 +99,10 @@ exports.processTextWithAI = async (combinedText) => {
   };
 
   try {
-    const response = await axios.post(API_URL, payload, {
+    const response = await axios.post(process.env.OPENAI_API_URL, payload, {
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${API_KEY}`,
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
       },
     });
 
@@ -121,10 +117,11 @@ exports.processTextWithAI = async (combinedText) => {
     if (error.response) {
       const { status, statusText, data } = error.response;
       console.error(
-        `Axios Error: ${status} ${statusText} - ${
-          data?.error?.message || JSON.stringify(data)
-        }`
+        `Axios Error: ${status} ${statusText} - ${JSON.stringify(data)}`
       );
+      if (data?.error) {
+        console.error("Error details:", data.error.message);
+      }
       throw new Error(
         `Failed to process text with AI. Received ${status} ${statusText} from OpenAI API: ${
           data?.error?.message || "No additional details"
@@ -152,8 +149,12 @@ exports.receiveJobListingText = async (req, res) => {
   const { userId } = req.params;
 
   try {
+    // Validate userId to ensure it's a valid MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ error: "Invalid user ID format." });
+    }
+
     // Find the user's data
-    console.log("Received userId:", userId);
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ error: "User not found." });
@@ -192,8 +193,12 @@ exports.receiveJobListingText = async (req, res) => {
     console.log(pdfBuffer);
   } catch (error) {
     console.error("Error in receiveJobListingText:", error);
-    res
-      .status(500)
-      .json({ error: error.message || "Error processing job listing and CV." });
+    if (error.name === "CastError" && error.message.includes("ObjectId")) {
+      return res.status(400).json({ error: "Invalid user ID format." });
+    }
+    res.status(500).json({
+      error: error.message || "Error processing job listing and CV.",
+      stack: error.stack, // Include the stack trace for more details
+    });
   }
 };

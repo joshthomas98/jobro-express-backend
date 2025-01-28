@@ -1,7 +1,7 @@
 const express = require("express");
+require("dotenv").config();
 const cors = require("cors");
 const path = require("path"); // Import the path module
-require("dotenv").config();
 
 const userRoutes = require("./src/routes/userRoutes");
 const customisedCVRoutes = require("./src/routes/customisedCVRoutes");
