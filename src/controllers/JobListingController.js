@@ -1,4 +1,5 @@
 const JobListing = require("../models/JobListing");
+const mongoose = require("mongoose");
 const User = require("../models/User");
 const axios = require("axios");
 const PDFDocument = require("pdfkit");
