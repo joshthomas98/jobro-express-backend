@@ -107,99 +107,103 @@ exports.processTextWithAI = async (combinedText) => {
       },
     });
 
-    // Accessing message.content for gpt-3.5-turbo response structure
-    const data = response.data.choices[0].message.content.trim();
+    const data = response.data.choices[0]?.message?.content?.trim();
+    if (!data) {
+      throw new Error("Empty AI response received.");
+    }
+
     return data;
   } catch (error) {
-    // Log the full error for debugging purposes
     console.error("Error in processTextWithAI:", error);
 
-    // Check if the error is from Axios and includes a response
     if (error.response) {
       const { status, statusText, data } = error.response;
       console.error(
-        `Axios Error: ${status} ${statusText} - ${JSON.stringify(data)}`
+        `OpenAI API Error: ${status} ${statusText} - ${JSON.stringify(data)}`
       );
-      if (data?.error) {
-        console.error("Error details:", data.error.message);
-      }
       throw new Error(
-        `Failed to process text with AI. Received ${status} ${statusText} from OpenAI API: ${
-          data?.error?.message || "No additional details"
-        }`
+        `Failed to process text with AI. OpenAI API responded with ${status} ${statusText}.`
       );
     } else if (error.request) {
-      // The request was made but no response was received
       console.error("No response received from OpenAI API:", error.request);
-      throw new Error(
-        "Failed to process text with AI. No response received from OpenAI API. Please check your network connection or the API status."
-      );
+      throw new Error("Failed to process text with AI. No response received.");
     } else {
-      // Some other kind of error
       console.error("Unexpected error:", error.message);
       throw new Error(
-        `Failed to process text with AI. Unexpected error: ${error.message}`
+        `Unexpected error in processTextWithAI: ${error.message}`
       );
     }
   }
 };
 
-// Receive job listing text, combine with user's base CV, and generate PDF with AI-optimised CV
+// Function to generate a PDF from AI-optimised text
+async function generateOptimisedCVPdf(text) {
+  return new Promise((resolve, reject) => {
+    try {
+      const doc = new PDFDocument();
+      const buffers = [];
+
+      doc.on("data", buffers.push.bind(buffers));
+      doc.on("end", () => {
+        const pdfBuffer = Buffer.concat(buffers);
+        console.log("Generated PDF size:", pdfBuffer.length);
+        resolve(pdfBuffer);
+      });
+
+      doc.fontSize(12).text(text || "No content available", {
+        align: "left",
+        width: 500,
+      });
+
+      doc.end();
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      reject(error);
+    }
+  });
+}
+
+// Receive job listing text, combine with user's base CV, and generate a downloadable PDF
 exports.receiveJobListingText = async (req, res) => {
   const { jobListingText } = req.body;
   const { userId } = req.params;
 
   try {
-    // Validate userId to ensure it's a valid MongoDB ObjectId
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({ error: "Invalid user ID format." });
     }
 
-    // Find the user's data
     const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ error: "User not found." });
+    if (!user || !user.baseCV || !user.baseCV.content) {
+      return res.status(404).json({ error: "User or base CV not found." });
     }
 
-    // Ensure baseCV content exists before processing
-    if (!user.baseCV || !user.baseCV.content) {
-      return res.status(404).json({ error: "Base CV content not found." });
-    }
-
-    // Get base CV text directly from the content field
-    const baseCVText = user.baseCV.content;
-
-    // Combine base CV text and job listing text
-    const combinedText = `${baseCVText}\n\n${jobListingText}`;
-
-    // Call AI to generate the optimised CV
+    const combinedText = `${user.baseCV.content}\n\n${jobListingText}`;
     const optimisedCv = await exports.processTextWithAI(combinedText);
 
     if (!optimisedCv) {
       return res
         .status(500)
-        .json({ error: "AI failed to generate optimised CV." });
+        .json({ error: "AI failed to generate an optimised CV." });
     }
 
-    // Generate a new PDF from the AI-optimised text
     const pdfBuffer = await generateOptimisedCVPdf(optimisedCv);
 
-    // Send the PDF as a downloadable response
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader(
       "Content-Disposition",
       "attachment; filename=optimised_cv.pdf"
     );
-    res.send(pdfBuffer);
-    console.log(pdfBuffer);
+    res.setHeader("Content-Length", pdfBuffer.length);
+
+    res.end(pdfBuffer);
   } catch (error) {
     console.error("Error in receiveJobListingText:", error);
-    if (error.name === "CastError" && error.message.includes("ObjectId")) {
-      return res.status(400).json({ error: "Invalid user ID format." });
-    }
-    res.status(500).json({
-      error: error.message || "Error processing job listing and CV.",
-      stack: error.stack, // Include the stack trace for more details
-    });
+    res
+      .status(500)
+      .json({
+        error: "Error processing job listing and generating CV.",
+        details: error.message,
+      });
   }
 };
