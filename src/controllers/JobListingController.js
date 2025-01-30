@@ -88,10 +88,14 @@ exports.deleteJobListingById = async (req, res) => {
 
 // Process the job listing text with AI to generate an optimised CV
 exports.processTextWithAI = async (combinedText) => {
+  const formattedPrompt = process.env.NEW_PROMPT.replace(/\\n/g, "\n"); // Convert \n to actual newlines
+
+  console.log("Formatted Prompt:\n", formattedPrompt);
+
   const payload = {
     model: "gpt-3.5-turbo",
     messages: [
-      { role: "system", content: process.env.NEW_PROMPT },
+      { role: "system", content: formattedPrompt }, // Use formattedPrompt
       { role: "user", content: combinedText },
     ],
     temperature: 0.5,
@@ -199,11 +203,9 @@ exports.receiveJobListingText = async (req, res) => {
     res.end(pdfBuffer);
   } catch (error) {
     console.error("Error in receiveJobListingText:", error);
-    res
-      .status(500)
-      .json({
-        error: "Error processing job listing and generating CV.",
-        details: error.message,
-      });
+    res.status(500).json({
+      error: "Error processing job listing and generating CV.",
+      details: error.message,
+    });
   }
 };
