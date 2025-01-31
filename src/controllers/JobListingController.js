@@ -90,7 +90,8 @@ exports.deleteJobListingById = async (req, res) => {
 exports.processTextWithAI = async (combinedText) => {
   const formattedPrompt = process.env.NEW_PROMPT.replace(/\\n/g, "\n"); // Convert \n to actual newlines
 
-  console.log("Formatted Prompt:\n", formattedPrompt);
+  console.log("ENV Prompt in Railway:", process.env.NEW_PROMPT);
+  console.log("Formatted Prompt (After \\n Replacement):", formattedPrompt);
 
   const payload = {
     model: "gpt-3.5-turbo",
