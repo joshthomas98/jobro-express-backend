@@ -94,13 +94,13 @@ exports.processTextWithAI = async (combinedText) => {
   console.log("Formatted Prompt (After \\n Replacement):", formattedPrompt);
 
   const payload = {
-    model: "gpt-3.5-turbo",
+    model: "gpt-4-turbo",
     messages: [
       { role: "system", content: formattedPrompt }, // Use formattedPrompt
       { role: "user", content: combinedText },
     ],
     temperature: 0.5,
-    max_tokens: 1500,
+    max_tokens: 5000,
     frequency_penalty: 1,
   };
 
