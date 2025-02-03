@@ -119,7 +119,10 @@ exports.processTextWithAI = async (combinedText) => {
 
     return data;
   } catch (error) {
-    console.error("Error in processTextWithAI:", error);
+    console.error(
+      "Error in processTextWithAI:",
+      error.response ? error.response.data : error.message
+    );
 
     if (error.response) {
       const { status, statusText, data } = error.response;
